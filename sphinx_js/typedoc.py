@@ -149,7 +149,11 @@ class TypeDoc(object):
         elif type.get('type') == 'reflection':
             names = ['<TODO>']
         if type.get('typeArguments'):
-            argNames = ['|'.join(self.make_type_name(arg)) for arg in type.get('typeArguments')]
+            def recursiveJoin(val):
+                if isinstance(val, list):
+                    return '|'.join([recursiveJoin(v) for v in val])
+                return val
+            argNames = [recursiveJoin(self.make_type_name(arg)) for arg in type.get('typeArguments')]
             names = [names[0] + '<' + ','.join(argNames) + '>']
         return names
 
@@ -289,7 +293,7 @@ class TypeDoc(object):
                     doclet['params'].append(self.make_param(param))
 
             if kindString == 'Class':
-                for child in node.get('children'):
+                for child in node.get('children', []):
                     if (child.get('kindString') == 'Constructor'):
                         child_comment = child.get('comment', {})
                         child_description = self.make_description(child_comment)
